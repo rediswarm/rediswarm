@@ -1,0 +1,1 @@
+/docker-entrypoint.d/redis-prepare.sh
