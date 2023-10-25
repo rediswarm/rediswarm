@@ -1,11 +1,11 @@
 services:
   redis:
-    image: localhost/redis:dev
-    hostname: redis-{{.Task.Slot}}
+    image: rediswarm/rediswarm:dev
+    hostname: rediswarm-{{.Task.Slot}}
     environment:
       - REDIS_SLOT={{.Task.Slot}}
-      - REDIS_HOSTNAME_PREFIX=${REDIS_HOSTNAME_PREFIX:-redis-}
-      - REDIS_SWARM_SECRET=${REDIS_MASTER_AUTH:-redis-swarm}
+      - REDIS_HOSTNAME_PREFIX=${REDIS_HOSTNAME_PREFIX:-rediswarm-}
+      - REDIS_SWARM_SECRET=${REDIS_MASTER_AUTH:-rediswarm}
     deploy:
       replicas: 3
       restart_policy:

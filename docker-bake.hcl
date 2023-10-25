@@ -5,5 +5,5 @@ target "default" {
 
 target "dev" {
     inherits = ["default"]
-    tags = ["localhost/redis:dev"]
+    tags = ["rediswarm/rediswarm:dev"]
 }
