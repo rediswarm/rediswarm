@@ -23,7 +23,7 @@ REDIS_SWARM_SLOT_machine() {
             REDIS_MASTER_ADDR="${REDIS_HOSTNAME_PREFIX}${i}"
             wait-for-it.sh --quiet -t 30 "${REDIS_MASTER_ADDR}:${REDIS_MASTER_PORT}" -s -- echo "$ME: Redis primary is up at ${REDIS_MASTER_ADDR}" && break
         done
-        export REDIS_SLAVEOF="replicaof ${REDIS_MASTER_ADDR} ${REDIS_MASTER_PORT}\nreplica-announce-ip ${REDIS_HOSTNAME_PREFIX}${REDIS_SWARM_SLOT}"
+        export REDIS_SLAVEOF="replicaof ${REDIS_MASTER_ADDR} ${REDIS_MASTER_PORT}"
     fi
 }
 
