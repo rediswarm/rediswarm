@@ -28,7 +28,7 @@ REDIS_SWARM_SLOT_machine() {
 }
 
 auto_envsubst() {
-    local template_file="/etc/redis/template/redis.conf.template"
+    local template_file="/etc/redis/templates/redis.conf.template"
     local config_file="${REDIS_CONFIG_PATH}/redis.conf"
     local filter=""
 

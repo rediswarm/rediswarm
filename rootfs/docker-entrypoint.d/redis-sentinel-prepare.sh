@@ -30,7 +30,7 @@ REDIS_SWARM_SLOT_machine() {
 }
 
 auto_envsubst() {
-    local template_file="/etc/redis/template/sentinel.conf.template"
+    local template_file="/etc/redis/templates/sentinel.conf.template"
     local config_file="${REDIS_CONFIG_PATH}/sentinel.conf"
     local filter=""
 
