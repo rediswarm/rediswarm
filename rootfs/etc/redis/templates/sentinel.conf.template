@@ -2,6 +2,7 @@
 sentinel resolve-hostnames yes
 sentinel announce-hostnames yes
 
+sentinel announce-ip ${REDIS_HOSTNAME_PREFIX}${REDIS_SWARM_SLOT}
 sentinel monitor rediswarm ${REDIS_MASTER_ADDR} ${REDIS_MASTER_PORT} ${REDIS_SENTINEL_QUORUM}
 sentinel auth-pass rediswarm ${REDIS_SWARM_SECRET}
 
