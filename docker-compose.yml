@@ -3,7 +3,7 @@ services:
     image: rediswarm/rediswarm:dev
     hostname: rediswarm-{{.Task.Slot}}
     environment:
-      - REDIS_SLOT={{.Task.Slot}}
+      - REDIS_SWARM_SLOT={{.Task.Slot}}
       - REDIS_HOSTNAME_PREFIX=${REDIS_HOSTNAME_PREFIX:-rediswarm-}
       - REDIS_SWARM_SECRET=${REDIS_MASTER_AUTH:-rediswarm}
     deploy:

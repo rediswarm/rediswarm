@@ -13,14 +13,14 @@ entrypoint_log() {
     fi
 }
 
-redis_slot_machine() {
-    if [ ${REDIS_SLOT} -eq 1 ]; then
+REDIS_SWARM_SLOT_machine() {
+    if [ ${REDIS_SWARM_SLOT} -eq 1 ]; then
         entrypoint_log "$ME: Redis is running on slot 1, identify as primary!"
         export REDIS_MASTER_ADDR="${REDIS_HOSTNAME_PREFIX}1"
     else
-        entrypoint_log "$ME: Redis is running on slot ${REDIS_SLOT}, identify as replica!"
+        entrypoint_log "$ME: Redis is running on slot ${REDIS_SWARM_SLOT}, identify as replica!"
         REDIS_MASTER_ADDR=""
-        for((i=1;i<=${REDIS_SLOT_RETRY};i++)); do
+        for((i=1;i<=${REDIS_SWARM_SLOT_RETRY};i++)); do
             entrypoint_log "$ME: Attempting to find master on slot ${i}"
             REDIS_MASTER_ADDR="${REDIS_HOSTNAME_PREFIX}${i}"
             wait-for-it.sh --quiet -t 30 "${REDIS_MASTER_ADDR}:${REDIS_MASTER_PORT}" -s -- echo "$ME: Redis primary is up at ${REDIS_MASTER_ADDR}" && break
@@ -41,7 +41,7 @@ auto_envsubst() {
     envsubst "$defined_envs" < "$template_file" > "$config_file"
 }
 
-redis_slot_machine
+REDIS_SWARM_SLOT_machine
 auto_envsubst
 
 exit 0
