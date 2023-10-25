@@ -6,8 +6,6 @@ services:
       - REDIS_SLOT={{.Task.Slot}}
       - REDIS_HOSTNAME_PREFIX=${REDIS_HOSTNAME_PREFIX:-redis-}
       - REDIS_SWARM_SECRET=${REDIS_MASTER_AUTH:-redis-swarm}
-    ports:
-      - "6379:6379"
     deploy:
       replicas: 3
       restart_policy:
