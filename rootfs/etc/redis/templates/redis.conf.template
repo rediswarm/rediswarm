@@ -1,3 +1,4 @@
+protected-mode no
 masterauth "${REDISWARM_SECRET}"
 requirepass "${REDISWARM_SECRET}"
 
