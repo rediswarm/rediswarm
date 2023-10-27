@@ -1,3 +1,6 @@
+x-redis: &x-redis
+  image: rediswarm/rediswarm:dev
+
 x-deploy: &x-deploy-default
   restart_policy:
     condition: on-failure
@@ -17,8 +20,8 @@ x-deploy: &x-deploy-default
     monitor: 60s
     max_failure_ratio: 0.3
 
-x-redis: &x-redis
-  image: rediswarm/rediswarm:dev
+networks:
+  rediswarm:
 
 services:
   sentinel:
@@ -30,6 +33,8 @@ services:
       - REDISWARM_SECRET=${REDIS_MASTER_AUTH:-rediswarm}
       - REDIS_HOSTNAME_PREFIX=${REDIS_HOSTNAME_PREFIX:-redis-}
       - SENTINEL_HOSTNAME_PREFIX=${REDIS_HOSTNAME_PREFIX:-sentinel-}
+    networks:
+      - rediswarm
     deploy: 
       <<: *x-deploy-default
       replicas: 3
@@ -42,6 +47,8 @@ services:
       - REDISWARM_SLOT={{.Task.Slot}}
       - REDISWARM_SECRET=${REDIS_MASTER_AUTH:-rediswarm}
       - REDIS_HOSTNAME_PREFIX=${REDIS_HOSTNAME_PREFIX:-redis-}
+    networks:
+      - rediswarm
     deploy: 
       <<: *x-deploy-default
       replicas: 5
