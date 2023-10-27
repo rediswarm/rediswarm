@@ -9,3 +9,6 @@ deploy:
 
 destroy:
 	docker stack rm rediswarm-test
+
+test:
+	docker run -it --rm -v $(PWD):/app redis:alpine sh

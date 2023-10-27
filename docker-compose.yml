@@ -31,22 +31,22 @@ services:
       - REDISWARM_MODE=sentinel
       - REDISWARM_SLOT={{.Task.Slot}}
       - REDISWARM_SECRET=${REDISWARM_SECRET:-rediswarm}
-      - REDIS_HOSTNAME_PREFIX=${REDIS_HOSTNAME_PREFIX:-redis-}
-      - SENTINEL_HOSTNAME_PREFIX=${REDIS_HOSTNAME_PREFIX:-sentinel-}
+      - REDIS_HOSTNAME_PREFIX=${REDIS_HOSTNAME_PREFIX:-replica-}
+      - SENTINEL_HOSTNAME_PREFIX=${SENTINEL_HOSTNAME_PREFIX:-sentinel-}
     networks:
       - rediswarm
     deploy: 
       <<: *x-deploy-default
       replicas: 3
 
-  redis:
+  replica:
     <<: *x-redis
-    hostname: redis-{{.Task.Slot}}
+    hostname: replica-{{.Task.Slot}}
     environment:
       - REDISWARM_MODE=redis
       - REDISWARM_SLOT={{.Task.Slot}}
       - REDISWARM_SECRET=${REDISWARM_SECRET:-rediswarm}
-      - REDIS_HOSTNAME_PREFIX=${REDIS_HOSTNAME_PREFIX:-redis-}
+      - REDIS_HOSTNAME_PREFIX=${REDIS_HOSTNAME_PREFIX:-replica-}
     networks:
       - rediswarm
     deploy: 
