@@ -1,4 +1,0 @@
-#!/command/with-contenv bash
-
-echo "Starting redis..."
-redis-server "${REDIS_CONFIG_PATH}/redis.conf"

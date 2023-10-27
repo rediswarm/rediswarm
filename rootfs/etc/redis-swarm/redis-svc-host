@@ -1,0 +1,31 @@
+#!/command/with-contenv bash
+# vim:sw=2:ts=2:sts=2:et
+set -e
+source "/.rediswarm"
+
+ME=$(basename "$0")
+REDISWARM_MODE="${REDISWARM_MODE:-redis}" # or sentinel
+REDIS_STARTUP_FLAG=()
+
+entrypoint_log() {
+    if [ -z "${REDIS_QUIET_LOGS:-}" ]; then
+        echo "$@"
+    fi
+}
+
+if [[ "${REDISWARM_MODE}" == "redis" ]]; then
+    /etc/redis-swarm/redis-prepare.sh
+    REDIS_STARTUP_FLAG+=("${REDIS_CONFIG_PATH}/redis.conf")
+
+elif [[ "${REDISWARM_MODE}" == "sentinel" ]]; then
+    /etc/redis-swarm/redis-sentinel-prepare.sh
+    REDIS_STARTUP_FLAG+=("${REDIS_CONFIG_PATH}/sentinel.conf")
+    REDIS_STARTUP_FLAG+=(--sentinel)
+else
+    echo "${ME}: ERROR: REDISWARM_MODE must be 'redis' or 'sentinel'" >&2
+    exit 1
+fi
+
+entrypoint_log -e "\n$ME: Service is running in ${REDISWARM_MODE} mode\n"
+
+exec redis-server "${REDIS_STARTUP_FLAG[@]}"

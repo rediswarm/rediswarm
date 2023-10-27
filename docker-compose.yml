@@ -1,27 +1,47 @@
+x-deploy: &x-deploy-default
+  restart_policy:
+    condition: on-failure
+    delay: 5s
+    max_attempts: 3
+    window: 120s
+  update_config:
+    parallelism: 1
+    delay: 10s
+    failure_action: rollback
+    monitor: 60s
+    max_failure_ratio: 0.3
+  rollback_config:
+    parallelism: 1
+    delay: 10s
+    failure_action: pause
+    monitor: 60s
+    max_failure_ratio: 0.3
+
+x-redis: &x-redis
+  image: rediswarm/rediswarm:dev
+
 services:
-  redis:
-    image: rediswarm/rediswarm:dev
-    hostname: rediswarm-{{.Task.Slot}}
+  sentinel:
+    <<: *x-redis
+    hostname: sentinel-{{.Task.Slot}}
     environment:
-      - REDIS_SWARM_SLOT={{.Task.Slot}}
-      - REDIS_HOSTNAME_PREFIX=${REDIS_HOSTNAME_PREFIX:-rediswarm-}
-      - REDIS_SWARM_SECRET=${REDIS_MASTER_AUTH:-rediswarm}
-    deploy:
+      - REDISWARM_MODE=sentinel
+      - REDISWARM_SLOT={{.Task.Slot}}
+      - REDISWARM_SECRET=${REDIS_MASTER_AUTH:-rediswarm}
+      - REDIS_HOSTNAME_PREFIX=${REDIS_HOSTNAME_PREFIX:-redis-}
+      - SENTINEL_HOSTNAME_PREFIX=${REDIS_HOSTNAME_PREFIX:-sentinel-}
+    deploy: 
+      <<: *x-deploy-default
       replicas: 3
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-        max_attempts: 3
-        window: 120s
-      update_config:
-        parallelism: 1
-        delay: 10s
-        failure_action: rollback
-        monitor: 60s
-        max_failure_ratio: 0.3
-      rollback_config:
-        parallelism: 1
-        delay: 10s
-        failure_action: pause
-        monitor: 60s
-        max_failure_ratio: 0.3
+
+  redis:
+    <<: *x-redis
+    hostname: redis-{{.Task.Slot}}
+    environment:
+      - REDISWARM_MODE=redis
+      - REDISWARM_SLOT={{.Task.Slot}}
+      - REDISWARM_SECRET=${REDIS_MASTER_AUTH:-rediswarm}
+      - REDIS_HOSTNAME_PREFIX=${REDIS_HOSTNAME_PREFIX:-redis-}
+    deploy: 
+      <<: *x-deploy-default
+      replicas: 5

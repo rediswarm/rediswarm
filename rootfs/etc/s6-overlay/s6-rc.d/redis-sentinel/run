@@ -1,4 +1,0 @@
-#!/command/with-contenv bash
-
-echo "Starting redis-sentinel..."
-redis-server "${REDIS_CONFIG_PATH}/sentinel.conf" --sentinel
