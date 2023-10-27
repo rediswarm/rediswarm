@@ -30,7 +30,7 @@ services:
     environment:
       - REDISWARM_MODE=sentinel
       - REDISWARM_SLOT={{.Task.Slot}}
-      - REDISWARM_SECRET=${REDIS_MASTER_AUTH:-rediswarm}
+      - REDISWARM_SECRET=${REDISWARM_SECRET:-rediswarm}
       - REDIS_HOSTNAME_PREFIX=${REDIS_HOSTNAME_PREFIX:-redis-}
       - SENTINEL_HOSTNAME_PREFIX=${REDIS_HOSTNAME_PREFIX:-sentinel-}
     networks:
@@ -45,7 +45,7 @@ services:
     environment:
       - REDISWARM_MODE=redis
       - REDISWARM_SLOT={{.Task.Slot}}
-      - REDISWARM_SECRET=${REDIS_MASTER_AUTH:-rediswarm}
+      - REDISWARM_SECRET=${REDISWARM_SECRET:-rediswarm}
       - REDIS_HOSTNAME_PREFIX=${REDIS_HOSTNAME_PREFIX:-redis-}
     networks:
       - rediswarm
