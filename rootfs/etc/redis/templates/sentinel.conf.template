@@ -229,8 +229,8 @@ sentinel parallel-syncs mymaster 1
 #   the replicas will be reconfigured by the Sentinels anyway, but not with
 #   the exact parallel-syncs progression as specified.
 #
-# Default is 3 minutes.
-sentinel failover-timeout mymaster 180000
+# Default is 180000 or 3 minutes.
+sentinel failover-timeout mymaster 30000
 
 # SCRIPTS EXECUTION
 #
