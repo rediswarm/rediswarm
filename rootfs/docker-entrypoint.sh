@@ -56,9 +56,12 @@ function run_sentinel() {
         fi
     fi
 
-    # Generate sentinel.conf
-    entrypoint_log "$ME: Running envsubst on $template_file to $config_file"
-    envsubst "$defined_envs" < "$template_file" > "$config_file"
+    # If the config file already, the Sentinel already been bootstraped
+    # Otherwise generate a new sentinel.conf
+    if [[ ! -f "$config_file" ]]; then
+        entrypoint_log "$ME: Running envsubst on $template_file to $config_file"
+        envsubst "$defined_envs" < "$template_file" > "$config_file"
+    fi
 
     entrypoint_log "$ME: Starting Sentinel..."
     redis-sentinel "$config_file"
