@@ -1,4 +1,4 @@
-# Redis configuration file example.
+# Rediswarm default configuration file.
 #
 # Note that in order to read the configuration file, Redis must be
 # started with the file path as first argument:
@@ -84,7 +84,7 @@
 # You will also need to set a password unless you explicitly disable protected
 # mode.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bind 127.0.0.1 -::1
+bind * -::*
 
 # By default, outgoing connections (from replica to master, from Sentinel to
 # instances, cluster bus, etc.) are not bound to a specific local address. In
