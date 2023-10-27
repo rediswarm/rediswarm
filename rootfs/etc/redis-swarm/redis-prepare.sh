@@ -13,17 +13,17 @@ entrypoint_log() {
 
 REDISWARM_SLOT_machine() {
     if [ "${REDISWARM_SLOT}" -eq 1 ]; then
-        entrypoint_log "$ME: Redis is running on slot 1, identify as primary!"
+        entrypoint_log "$ME: Redis is running on slot 1, posibliy primary!"
         export REDIS_SLAVEOF=""
     else
-        entrypoint_log "$ME: Redis is running on slot ${REDISWARM_SLOT}, identify as replica!"
         REDIS_PRIMARY_ADDR=""
         for((i=1;i<=${REDISWARM_SLOT_RETRY};i++)); do
             entrypoint_log "$ME: Attempting to find master on slot ${i}"
             REDIS_PRIMARY_ADDR="${REDIS_HOSTNAME_PREFIX}${i}"
-            wait-for-it.sh --quiet -t ${REDISWARM_SLOT_TIMEOUT} "${REDIS_PRIMARY_ADDR}:${REDIS_PRIMARY_PORT}" -s -- echo "$ME: Redis primary is up at ${REDIS_PRIMARY_ADDR}" && break
+            wait-for-it.sh --quiet -t ${REDISWARM_SLOT_TIMEOUT} "${REDIS_PRIMARY_ADDR}:${REDIS_PRIMARY_PORT}" -s && break
         done
         export REDIS_SLAVEOF="replicaof ${REDIS_PRIMARY_ADDR} ${REDIS_PRIMARY_PORT}"
+        entrypoint_log "$ME: Redis is running on slot ${REDISWARM_SLOT}, identify as replica of ${REDIS_PRIMARY_ADDR} ${REDIS_PRIMARY_PORT}!"
     fi
 }
 
