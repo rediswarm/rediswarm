@@ -1,5 +1,7 @@
 # Rediswarm sentinel.conf
 
+bind 0.0.0.0
+
 # By default protected mode is disabled in sentinel mode. Sentinel is reachable
 # from interfaces different than localhost. Make sure the sentinel instance is
 # protected from the outside world via firewalling or other means.
@@ -64,7 +66,7 @@ logfile ""
 #
 # Example:
 #
-# sentinel announce-ip ${REDIS_SENTINEL_HOSTNAME_PREFIX}${REDISWARM_SLOT}
+sentinel announce-ip ${REDIS_SENTINEL_HOSTNAME_PREFIX}${REDISWARM_SLOT}
 
 # dir <working-directory>
 # Every long running process should have a well-defined working directory.
@@ -90,7 +92,7 @@ dir /tmp
 #
 # Note: master name should not include special characters or spaces.
 # The valid charset is A-z 0-9 and the three characters ".-_".
-sentinel monitor mymaster ${REDIS_PRIMARY_ADDR} ${REDIS_PRIMARY_PORT} ${SENTINEL_QUORUM}
+sentinel monitor mymaster ${REDIS_PRIMARY_ADDR} ${REDIS_PRIMARY_PORT} ${REDIS_SENTINEL_QUORUM}
 
 # sentinel auth-pass <master-name> <password>
 #

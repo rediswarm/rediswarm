@@ -4,8 +4,9 @@ set -e
 source "/.rediswarm"
 
 ME=$(basename "$0")
+MAXWAIT=30
 
-# cat /etc/redis-swarm/banner.txt
+cat /etc/redis-swarm/banner.txt
 
 echo "- REDISWARM_MODE=${REDISWARM_MODE}"
 echo "- REDISWARM_SLOT=${REDISWARM_SLOT}"
@@ -20,17 +21,19 @@ function entrypoint_log() {
 }
 
 function run_sentinel() {
+    sleep $((RANDOM % MAXWAIT))
+
     # Attempt to connect to existing Sentinel
     # If we can't connect, we are the first node
     entrypoint_log -n "$ME: Attempting to contact existing Sentinel: "
-    if redis-cli -h "${REDIS_SENTINEL_ADDR}" -p "${REDIS_SENTINEL_PORT}" INFO 2>&1 /dev/null; then
+    if redis-cli -h ${REDIS_SENTINEL_ADDR} -p ${REDIS_SENTINEL_PORT} INFO 2>&1 /dev/null; then
         while true; do
-            _tmp_master=$(redis-cli -h "${REDIS_SENTINEL_ADDR}" -p "${REDIS_SENTINEL_PORT}" --csv SENTINEL get-master-addr-by-name mymaster | tr ',' ' ' | cut -d' ' -f1)
+            _tmp_master=$(redis-cli -h ${REDIS_SENTINEL_ADDR} -p ${REDIS_SENTINEL_PORT} --csv SENTINEL get-master-addr-by-name mymaster | tr ',' ' ' | cut -d' ' -f1)
             if [[ -n ${_tmp_master} ]]; then
                 REDIS_PRIMARY_ADDR="${_tmp_master//\"}"
             fi
 
-            if redis-cli -h "${REDIS_PRIMARY_ADDR}" INFO 2>&1 /dev/null; then
+            if redis-cli -h ${REDIS_PRIMARY_ADDR} INFO 2>&1 /dev/null; then
                 export REDIS_PRIMARY_ADDR
                 break
             fi
@@ -61,13 +64,15 @@ function run_sentinel() {
 }
 
 function run_redis() {
+    sleep $((RANDOM % MAXWAIT))
+
     # Connect to Sentinel and request for primary node
     while true; do
         entrypoint_log -n "$ME: Attempting to contact existing Sentinel: "
-        if redis-cli -h "${REDIS_SENTINEL_ADDR}" -p "${REDIS_SENTINEL_PORT}" INFO 2>&1 /dev/null; then
+        if redis-cli -h ${REDIS_SENTINEL_ADDR} -p ${REDIS_SENTINEL_PORT} INFO 2>&1 /dev/null; then
             echo ""
 
-            _tmp_master=$(redis-cli -h "${REDIS_SENTINEL_ADDR}" -p "${REDIS_SENTINEL_PORT}" --csv SENTINEL get-master-addr-by-name mymaster | tr ',' ' ' | cut -d' ' -f1)
+            _tmp_master=$(redis-cli -h ${REDIS_SENTINEL_ADDR} -p ${REDIS_SENTINEL_PORT} --csv SENTINEL get-master-addr-by-name mymaster | tr ',' ' ' | cut -d' ' -f1)
             if [[ -n ${_tmp_master} ]]; then
                 REDIS_PRIMARY_ADDR="${_tmp_master//\"}"
             fi
@@ -79,7 +84,7 @@ function run_redis() {
                 break
             fi
 
-            if redis-cli -h "${REDIS_PRIMARY_ADDR}" INFO 2>&1 /dev/null; then
+            if redis-cli -h ${REDIS_PRIMARY_ADDR} INFO 2>&1 /dev/null; then
                 export REDIS_PRIMARY_ADDR
                 break
             fi

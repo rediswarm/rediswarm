@@ -32,7 +32,7 @@ services:
       - REDISWARM_SLOT={{.Task.Slot}}
       - REDISWARM_SECRET=${REDISWARM_SECRET:-rediswarm}
       - REDIS_HOSTNAME_PREFIX=${REDIS_HOSTNAME_PREFIX:-replica-}
-      - SENTINEL_HOSTNAME_PREFIX=${SENTINEL_HOSTNAME_PREFIX:-sentinel-}
+      - REDIS_SENTINEL_HOSTNAME_PREFIX=${REDIS_SENTINEL_HOSTNAME_PREFIX:-sentinel-}
     networks:
       - rediswarm
     deploy: 
@@ -47,6 +47,7 @@ services:
       - REDISWARM_SLOT={{.Task.Slot}}
       - REDISWARM_SECRET=${REDISWARM_SECRET:-rediswarm}
       - REDIS_HOSTNAME_PREFIX=${REDIS_HOSTNAME_PREFIX:-replica-}
+      - REDIS_SENTINEL_ADDR=${REDIS_SENTINEL_ADDR:-sentinel}
     networks:
       - rediswarm
     deploy: 
