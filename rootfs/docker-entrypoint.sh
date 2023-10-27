@@ -21,6 +21,13 @@ function entrypoint_log() {
 }
 
 function run_sentinel() {
+    local template_file="/etc/redis/templates/sentinel.conf.template"
+    local config_file="${REDIS_CONFIG_PATH}/sentinel.conf"
+    local filter=""
+
+    local defined_envs
+    defined_envs=$(printf '${%s} ' $(awk "END { for (name in ENVIRON) { print ( name ~ /${filter}/ ) ? name : \"\" } }" < /dev/null ))
+
     # Attempt to connect to existing Sentinel
     # If we can't connect, we are the first node
     entrypoint_log -n "$ME: Attempting to contact existing Sentinel: "
@@ -40,20 +47,16 @@ function run_sentinel() {
             sleep 5
         done
     else
-        export REDIS_PRIMARY_ADDR="${REDIS_HOSTNAME_PREFIX}1"
-        echo ""
-        entrypoint_log "$ME: No existing Sentinel node found, starting a new instance!"
-        entrypoint_log "$ME: Auto-configuring \"${REDIS_PRIMARY_ADDR}\" as primary node!"
+        # If the config file already, the Sentinel already been bootstraped
+        if [[ ! -f "$config_file" ]]; then
+            export REDIS_PRIMARY_ADDR="${REDIS_HOSTNAME_PREFIX}1"
+            echo ""
+            entrypoint_log "$ME: No existing Sentinel node found, starting a new instance!"
+            entrypoint_log "$ME: Auto-configuring \"${REDIS_PRIMARY_ADDR}\" as primary node!"
+        fi
     fi
 
     # Generate sentinel.conf
-    local template_file="/etc/redis/templates/sentinel.conf.template"
-    local config_file="${REDIS_CONFIG_PATH}/sentinel.conf"
-    local filter=""
-
-    local defined_envs
-    defined_envs=$(printf '${%s} ' $(awk "END { for (name in ENVIRON) { print ( name ~ /${filter}/ ) ? name : \"\" } }" < /dev/null ))
-
     entrypoint_log "$ME: Running envsubst on $template_file to $config_file"
     envsubst "$defined_envs" < "$template_file" > "$config_file"
 
