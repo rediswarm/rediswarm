@@ -7,7 +7,8 @@ protected-mode no
 
 # port <sentinel-port>
 # The port that this sentinel instance will run on
-port 26379
+# Default port 26379
+port ${REDIS_SENTINEL_PORT}
 
 # By default Redis Sentinel does not run as a daemon. Use 'yes' if you need it.
 # Note that Redis will write a pid file in /var/run/redis-sentinel.pid when
@@ -63,7 +64,7 @@ logfile ""
 #
 # Example:
 #
-sentinel announce-ip ${SENTINEL_HOSTNAME_PREFIX}${REDISWARM_SLOT}
+# sentinel announce-ip ${REDIS_SENTINEL_HOSTNAME_PREFIX}${REDISWARM_SLOT}
 
 # dir <working-directory>
 # Every long running process should have a well-defined working directory.
@@ -89,7 +90,7 @@ dir /tmp
 #
 # Note: master name should not include special characters or spaces.
 # The valid charset is A-z 0-9 and the three characters ".-_".
-sentinel monitor mymaster ${REDIS_PRIMARY_ADDR} ${REDIS_PRIMARY_PORT} ${SENTINEL_QUORUM}
+sentinel monitor mymaster ${REDIS_HOSTNAME_PREFIX} ${REDIS_PRIMARY_PORT} ${SENTINEL_QUORUM}
 
 # sentinel auth-pass <master-name> <password>
 #
@@ -342,13 +343,13 @@ sentinel deny-scripts-reconfig yes
 # that you must make sure your DNS is configured properly and that DNS
 # resolution does not introduce very long delays.
 #
-SENTINEL resolve-hostnames yes
+SENTINEL resolve-hostnames no
 
 # When resolve-hostnames is enabled, Sentinel still uses IP addresses
 # when exposing instances to users, configuration files, etc. If you want
 # to retain the hostnames when announced, enable announce-hostnames below.
 #
-SENTINEL announce-hostnames yes
+SENTINEL announce-hostnames no
 
 # When master_reboot_down_after_period is set to 0, Sentinel does not fail over
 # when receiving a -LOADING response from a master. This was the only supported
