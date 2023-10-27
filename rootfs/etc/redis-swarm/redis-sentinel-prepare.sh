@@ -35,8 +35,13 @@ auto_envsubst() {
     local defined_envs
     defined_envs=$(printf '${%s} ' $(awk "END { for (name in ENVIRON) { print ( name ~ /${filter}/ ) ? name : \"\" } }" < /dev/null ))
 
-    entrypoint_log "$ME: Running envsubst on $template_file to $config_file"
-    envsubst "$defined_envs" < "$template_file" > "$config_file"
+    if [ -f "$config_file" ]; then
+        entrypoint_log "$ME: Sentinel config file \"$config_file\" already exists! [SKIPPED]"
+    else
+        entrypoint_log "$ME: Running envsubst on $template_file to $config_file"
+        envsubst "$defined_envs" < "$template_file" > "$config_file"
+    fi
+    
 }
 
 REDISWARM_SLOT_machine
