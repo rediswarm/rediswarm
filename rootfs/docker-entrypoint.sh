@@ -21,8 +21,6 @@ function entrypoint_log() {
 }
 
 function run_sentinel() {
-    sleep $((RANDOM % MAXWAIT))
-
     # Attempt to connect to existing Sentinel
     # If we can't connect, we are the first node
     entrypoint_log -n "$ME: Attempting to contact existing Sentinel: "
@@ -69,9 +67,7 @@ function run_redis() {
     # Connect to Sentinel and request for primary node
     while true; do
         entrypoint_log -n "$ME: Attempting to contact existing Sentinel: "
-        if redis-cli -h ${REDIS_SENTINEL_ADDR} -p ${REDIS_SENTINEL_PORT} INFO 2>&1 /dev/null; then
-            echo ""
-
+        if redis-cli -h ${REDIS_SENTINEL_ADDR} -p ${REDIS_SENTINEL_PORT} INFO  2>&1 /dev/null; then
             _tmp_master=$(redis-cli -h ${REDIS_SENTINEL_ADDR} -p ${REDIS_SENTINEL_PORT} --csv SENTINEL get-master-addr-by-name mymaster | tr ',' ' ' | cut -d' ' -f1)
             if [[ -n ${_tmp_master} ]]; then
                 REDIS_PRIMARY_ADDR="${_tmp_master//\"}"
@@ -80,17 +76,18 @@ function run_redis() {
             # Check if we are the primary node
             if [[ "$(hostname)" == "${REDIS_PRIMARY_ADDR}" ]]; then
                 export REDIS_PRIMARY_ADDR
+                export REDIS_CONF_REPLICAOF=""
                 entrypoint_log "$ME: Sentinel set me \"${REDIS_PRIMARY_ADDR}\" as the primary node!"
                 break
             fi
 
             if redis-cli -h ${REDIS_PRIMARY_ADDR} INFO 2>&1 /dev/null; then
                 export REDIS_PRIMARY_ADDR
+                export REDIS_CONF_REPLICAOF="replicaof ${REDIS_PRIMARY_ADDR} ${REDIS_PRIMARY_PORT}"
                 break
             fi
-
-            entrypoint_log "$ME: Connecting to primary failed.  Waiting..."
         fi
+        entrypoint_log "$ME: Connecting to primary failed.  Waiting..."
         sleep 5
     done
 
