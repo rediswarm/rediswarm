@@ -5,6 +5,7 @@ source "/.rediswarm"
 
 ME=$(basename "$0")
 REDISWARM_MODE="${REDISWARM_MODE:-redis}" # or sentinel
+REDIS_CONFIG_PATH="${REDIS_CONFIG_PATH:-/etc/redis/config}" # or sentinel
 REDIS_STARTUP_FLAG=()
 
 entrypoint_log() {
