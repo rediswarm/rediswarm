@@ -147,6 +147,10 @@ echo "- REDISWARM_MODE=${REDISWARM_MODE}"
 echo "- REDISWARM_SLOT=${REDISWARM_SLOT}"
 echo ""
 
+redis-server --version
+echo ""
+
+
 if [[ "${REDISWARM_MODE}" == "sentinel" ]]; then
     run_sentinel
     exit 0
