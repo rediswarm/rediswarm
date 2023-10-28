@@ -67,6 +67,7 @@ logfile ""
 # Example:
 #
 sentinel announce-ip ${REDIS_SENTINEL_HOSTNAME_PREFIX}${REDISWARM_SLOT}
+sentinel announce-port ${REDIS_SENTINEL_PORT}
 
 # dir <working-directory>
 # Every long running process should have a well-defined working directory.
