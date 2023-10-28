@@ -29,10 +29,11 @@ function run_sentinel() {
         while true; do
             _tmp_master=$(redis-cli -h ${REDIS_SENTINEL_ADDR} -p ${REDIS_SENTINEL_PORT} --csv SENTINEL get-master-addr-by-name mymaster | tr ',' ' ' | cut -d' ' -f1)
             if [[ -n ${_tmp_master} ]]; then
-                export REDIS_PRIMARY_ADDR="${_tmp_master//\"}"
+                REDIS_PRIMARY_ADDR="${_tmp_master//\"}"
 
                 # Trying to make contact with primary node
                 if redis-cli -h ${REDIS_PRIMARY_ADDR} INFO 2>&1 /dev/null; then
+                    export REDIS_PRIMARY_ADDR
                     return
                 fi
             fi
