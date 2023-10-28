@@ -31,29 +31,34 @@ function run_sentinel() {
     # Attempt to connect to existing Sentinel
     # If we can't connect, we are the first node
     if wait_for_sentinel; then
-        # Randomize sentinel startup
-        sleep $((RANDOM % RANDOM_SEED))
+        # If we can connect, we are not the first
+        # node, so we need to wait for the available sentinel to response
+        while true; do
+            _tmp_master=$(redis-cli -h ${REDIS_SENTINEL_ADDR} -p ${REDIS_SENTINEL_PORT} --csv SENTINEL get-master-addr-by-name mymaster | tr ',' ' ' | cut -d' ' -f1)
+            if [[ -n ${_tmp_master} ]]; then
+                REDIS_PRIMARY_ADDR="${_tmp_master//\"}"
 
-        _tmp_master=$(redis-cli -h ${REDIS_SENTINEL_ADDR} -p ${REDIS_SENTINEL_PORT} --csv SENTINEL get-master-addr-by-name mymaster | tr ',' ' ' | cut -d' ' -f1)
-        if [[ -n ${_tmp_master} ]]; then
-            REDIS_PRIMARY_ADDR="${_tmp_master//\"}"
+                entrypoint_log "$ME: Identified primary node: \"${REDIS_PRIMARY_ADDR}\""
+                
+                while true; do
+                    entrypoint_log "$ME: Trying to contact to primary node..."
+                    export REDISCLI_AUTH=${REDISWARM_SECRET}
+                    if redis-cli -h ${REDIS_PRIMARY_ADDR} -p ${REDIS_PRIMARY_PORT} INFO 2>&1 /dev/null; then
+                        unset REDISCLI_AUTH
+                        export REDIS_PRIMARY_ADDR
+                        entrypoint_log "$ME: Connected to primary node!"
+                        break
+                    fi
 
-            entrypoint_log "$ME: Identified primary node: \"${REDIS_PRIMARY_ADDR}\""
-            
-            while true; do
-                entrypoint_log "$ME: Trying to contact to primary node..."
-                export REDISCLI_AUTH=${REDISWARM_SECRET}
-                if redis-cli -h ${REDIS_PRIMARY_ADDR} -p ${REDIS_PRIMARY_PORT} INFO 2>&1 /dev/null; then
-                    unset REDISCLI_AUTH
-                    export REDIS_PRIMARY_ADDR
-                    entrypoint_log "$ME: Connected to primary node!"
-                    break
-                fi
+                    entrypoint_log "$ME: Connecting to primary failed.  Waiting..."
+                    sleep 5
+                done
+                break
+            fi
 
-                entrypoint_log "$ME: Connecting to primary failed.  Waiting..."
-                sleep 5
-            done
-        fi
+            entrypoint_log "$ME: Connecting to sentinel failed.  Waiting..."
+            sleep 5
+        done
     else
         # If the config file already, the Sentinel already been bootstraped
         if [[ -f "$config_file" ]]; then
