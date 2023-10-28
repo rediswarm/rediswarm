@@ -362,4 +362,4 @@ SENTINEL announce-hostnames yes
 # accept a -LOADING response after a master has been rebooted, before failing
 # over.
 
-SENTINEL master-reboot-down-after-period mymaster 0
+# SENTINEL master-reboot-down-after-period mymaster 0
