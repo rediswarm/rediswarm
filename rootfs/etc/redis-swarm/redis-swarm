@@ -84,6 +84,10 @@ function run_redis() {
                 export REDIS_PRIMARY_ADDR
                 export REDIS_CONF_REPLICAOF=""
                 entrypoint_log "$ME: Sentinel set me \"${REDIS_PRIMARY_ADDR}\" as the primary node!"
+            elif [[ "$(hostname -i)" == "${REDIS_PRIMARY_ADDR}" ]]; then
+                export REDIS_PRIMARY_ADDR
+                export REDIS_CONF_REPLICAOF=""
+                entrypoint_log "$ME: Sentinel set me \"${REDIS_PRIMARY_ADDR}\" as the primary node!"
             else
                 while true; do
                     entrypoint_log "$ME: Trying to contact with primary node..."
