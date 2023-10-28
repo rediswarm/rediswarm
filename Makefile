@@ -15,3 +15,6 @@ test:
 
 logs:
 	docker service logs -f rediswarm-test_sentinel
+
+scale:
+	docker service scale rediswarm-test_replica=5
