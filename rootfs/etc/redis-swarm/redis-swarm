@@ -4,15 +4,7 @@ set -e
 source "/.rediswarm"
 
 ME=$(basename "$0")
-MAXWAIT=30
-
-cat /etc/redis-swarm/banner.txt
-
-echo "- REDISWARM_MODE=${REDISWARM_MODE}"
-echo "- REDISWARM_SLOT=${REDISWARM_SLOT}"
-echo "- REDISWARM_SLOT_RETRY=${REDISWARM_SLOT_RETRY}"
-echo "- REDISWARM_SLOT_TIMEOUT=${REDISWARM_SLOT_TIMEOUT}"
-echo ""
+SCRIPT_DIR=$(dirname "$0")
 
 function entrypoint_log() {
     if [ -z "${REDIS_QUIET_LOGS:-}" ]; then
@@ -20,27 +12,29 @@ function entrypoint_log() {
     fi
 }
 
+function wait_for_sentinel() {
+    local _timeout=${1:-15}
+    entrypoint_log -n "$ME: Attempting to contact existing Sentinel: "
+    wait-for-it -t ${_timeout} -h ${REDIS_SENTINEL_ADDR} -p ${REDIS_SENTINEL_PORT}
+}
+
 function run_sentinel() {
     local template_file="/etc/redis/templates/sentinel.conf.template"
     local config_file="${REDIS_CONFIG_PATH}/sentinel.conf"
     local filter=""
 
-    local defined_envs
-    defined_envs=$(printf '${%s} ' $(awk "END { for (name in ENVIRON) { print ( name ~ /${filter}/ ) ? name : \"\" } }" < /dev/null ))
-
     # Attempt to connect to existing Sentinel
     # If we can't connect, we are the first node
-    entrypoint_log -n "$ME: Attempting to contact existing Sentinel: "
-    if redis-cli -h ${REDIS_SENTINEL_ADDR} -p ${REDIS_SENTINEL_PORT} INFO 2>&1 /dev/null; then
+    if wait_for_sentinel; then
         while true; do
             _tmp_master=$(redis-cli -h ${REDIS_SENTINEL_ADDR} -p ${REDIS_SENTINEL_PORT} --csv SENTINEL get-master-addr-by-name mymaster | tr ',' ' ' | cut -d' ' -f1)
             if [[ -n ${_tmp_master} ]]; then
-                REDIS_PRIMARY_ADDR="${_tmp_master//\"}"
-            fi
+                export REDIS_PRIMARY_ADDR="${_tmp_master//\"}"
 
-            if redis-cli -h ${REDIS_PRIMARY_ADDR} INFO 2>&1 /dev/null; then
-                export REDIS_PRIMARY_ADDR
-                break
+                # Trying to make contact with primary node
+                if redis-cli -h ${REDIS_PRIMARY_ADDR} INFO 2>&1 /dev/null; then
+                    break
+                fi
             fi
 
             entrypoint_log "$ME: Connecting to primary failed.  Waiting..."
@@ -48,36 +42,37 @@ function run_sentinel() {
         done
     else
         # If the config file already, the Sentinel already been bootstraped
-        if [[ ! -f "$config_file" ]]; then
+        if [[ -f "$config_file" ]]; then
+            entrypoint_log "$ME: An existing Sentinel config found. Auto-configure [DISABLED]!]"
+        else
             export REDIS_PRIMARY_ADDR="${REDIS_HOSTNAME_PREFIX}1"
-            echo ""
             entrypoint_log "$ME: No existing Sentinel node found, starting a new instance!"
             entrypoint_log "$ME: Auto-configuring \"${REDIS_PRIMARY_ADDR}\" as primary node!"
         fi
     fi
+    entrypoint_log "$ME: "
 
-    # If the config file already, the Sentinel already been bootstraped
-    # Otherwise generate a new sentinel.conf
-    if [[ ! -f "$config_file" ]]; then
-        entrypoint_log "$ME: Running envsubst on $template_file to $config_file"
-        envsubst "$defined_envs" < "$template_file" > "$config_file"
-    fi
+    # Generate sentinel.conf
+    local defined_envs
+    defined_envs=$(printf '${%s} ' $(awk "END { for (name in ENVIRON) { print ( name ~ /${filter}/ ) ? name : \"\" } }" < /dev/null ))
+
+    entrypoint_log "$ME: Running envsubst on $template_file to $config_file"
+    envsubst "$defined_envs" < "$template_file" > "$config_file"
 
     entrypoint_log "$ME: Starting Sentinel..."
     redis-sentinel "$config_file"
 }
 
 function run_redis() {
-    sleep $((RANDOM % MAXWAIT))
+    local template_file="/etc/redis/templates/redis.conf.template"
+    local config_file="${REDIS_CONFIG_PATH}/redis.conf"
+    local filter=""
 
     # Connect to Sentinel and request for primary node
-    while true; do
-        entrypoint_log -n "$ME: Attempting to contact existing Sentinel: "
-        if redis-cli -h ${REDIS_SENTINEL_ADDR} -p ${REDIS_SENTINEL_PORT} INFO  2>&1 /dev/null; then
-            _tmp_master=$(redis-cli -h ${REDIS_SENTINEL_ADDR} -p ${REDIS_SENTINEL_PORT} --csv SENTINEL get-master-addr-by-name mymaster | tr ',' ' ' | cut -d' ' -f1)
-            if [[ -n ${_tmp_master} ]]; then
-                REDIS_PRIMARY_ADDR="${_tmp_master//\"}"
-            fi
+    if wait_for_sentinel 0; then
+        _tmp_master=$(redis-cli -h ${REDIS_SENTINEL_ADDR} -p ${REDIS_SENTINEL_PORT} --csv SENTINEL get-master-addr-by-name mymaster | tr ',' ' ' | cut -d' ' -f1)
+        if [[ -n ${_tmp_master} ]]; then
+            REDIS_PRIMARY_ADDR="${_tmp_master//\"}"
 
             # Check if we are the primary node
             if [[ "$(hostname)" == "${REDIS_PRIMARY_ADDR}" ]]; then
@@ -87,21 +82,18 @@ function run_redis() {
                 break
             fi
 
+            # Trying to make contact with primary node
             if redis-cli -h ${REDIS_PRIMARY_ADDR} INFO 2>&1 /dev/null; then
                 export REDIS_PRIMARY_ADDR
                 export REDIS_CONF_REPLICAOF="replicaof ${REDIS_PRIMARY_ADDR} ${REDIS_PRIMARY_PORT}"
                 break
             fi
+
+            entrypoint_log "$ME: Connecting to primary failed.  Waiting..."
         fi
-        entrypoint_log "$ME: Connecting to primary failed.  Waiting..."
-        sleep 5
-    done
+    fi
 
     # Generate redis.conf
-    local template_file="/etc/redis/templates/redis.conf.template"
-    local config_file="${REDIS_CONFIG_PATH}/redis.conf"
-    local filter=""
-
     local defined_envs
     defined_envs=$(printf '${%s} ' $(awk "END { for (name in ENVIRON) { print ( name ~ /${filter}/ ) ? name : \"\" } }" < /dev/null ))
 
@@ -111,6 +103,16 @@ function run_redis() {
     entrypoint_log "$ME: Starting Redis..."
     redis-server "$config_file"
 }
+
+# banner
+cat "${SCRIPT_DIR}/banner.txt"
+
+# print environment variables
+echo "- REDISWARM_MODE=${REDISWARM_MODE}"
+echo "- REDISWARM_SLOT=${REDISWARM_SLOT}"
+echo "- REDISWARM_SLOT_RETRY=${REDISWARM_SLOT_RETRY}"
+echo "- REDISWARM_SLOT_TIMEOUT=${REDISWARM_SLOT_TIMEOUT}"
+echo ""
 
 if [[ "${REDISWARM_MODE}" == "sentinel" ]]; then
     run_sentinel

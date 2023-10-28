@@ -12,3 +12,6 @@ destroy:
 
 test:
 	docker run -it --rm -v $(PWD):/app redis:alpine sh
+
+logs:
+	docker service logs -f rediswarm-test_sentinel

@@ -2,10 +2,19 @@ FROM redis:alpine
 
 RUN apk update && apk add bash curl envsubst && rm -rf /var/cache/apk/*
 
-# redis
-EXPOSE 6379
-# sentinel
-EXPOSE 26379
+# https://github.com/socheatsok78/s6-overlay-installer
+ARG S6_OVERLAY_VERSION=v3.1.5.0
+ARG S6_OVERLAY_INSTALLER=main/s6-overlay-installer.sh
+RUN sh -c "$(curl -fsSL https://raw.githubusercontent.com/socheatsok78/s6-overlay-installer/${S6_OVERLAY_INSTALLER})"
+ENV S6_KEEP_ENV=1
+# ENV S6_VERBOSITY=1
+# ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=2
+CMD [ "sleep", "infinity" ]
+ENTRYPOINT [ "/init" ]
+
+# wait-for-it.sh
+ADD https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh /usr/local/bin/wait-for-it
+RUN chmod +x /usr/local/bin/wait-for-it
 
 ENV REDISWARM_MODE=redis
 ENV REDISWARM_SLOT=1
@@ -23,6 +32,9 @@ ENV REDIS_SENTINEL_QUORUM=2
 ENV REDIS_SENTINEL_HOSTNAME_PREFIX=sentinel-
 
 ADD rootfs /
-
 VOLUME [ "/etc/redis/config" ]
-ENTRYPOINT [ "/docker-entrypoint.sh" ]
+
+# redis
+EXPOSE 6379
+# sentinel
+EXPOSE 26379
