@@ -56,7 +56,7 @@ function run_sentinel() {
 
     # Generate sentinel.conf
     # If the config file already, the Sentinel already been bootstraped
-    if [[ -f "$config_file" ]]; then
+    if [[ ! -f "$config_file" ]]; then
         local defined_envs
         defined_envs=$(printf '${%s} ' $(awk "END { for (name in ENVIRON) { print ( name ~ /${filter}/ ) ? name : \"\" } }" < /dev/null ))
 
