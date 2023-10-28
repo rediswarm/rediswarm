@@ -134,8 +134,6 @@ cat "${SCRIPT_DIR}/banner.txt"
 # print environment variables
 echo "- REDISWARM_MODE=${REDISWARM_MODE}"
 echo "- REDISWARM_SLOT=${REDISWARM_SLOT}"
-echo "- REDISWARM_SLOT_RETRY=${REDISWARM_SLOT_RETRY}"
-echo "- REDISWARM_SLOT_TIMEOUT=${REDISWARM_SLOT_TIMEOUT}"
 echo ""
 
 if [[ "${REDISWARM_MODE}" == "sentinel" ]]; then
