@@ -5,6 +5,7 @@ source "/.rediswarm"
 
 ME=$(basename "$0")
 SCRIPT_DIR=$(dirname "$0")
+MAXWAIT=30
 
 function entrypoint_log() {
     if [ -z "${REDIS_QUIET_LOGS:-}" ]; then
@@ -19,6 +20,9 @@ function wait_for_sentinel() {
 }
 
 function run_sentinel() {
+    # Randomize sentinel startup
+    sleep $((RANDOM % MAXWAIT))
+
     local template_file="/etc/redis/templates/sentinel.conf.template"
     local config_file="${REDIS_CONFIG_PATH}/sentinel.conf"
     local filter=""
@@ -38,6 +42,7 @@ function run_sentinel() {
                 if redis-cli -h ${REDIS_PRIMARY_ADDR} -p ${REDIS_PRIMARY_PORT} INFO 2>&1 /dev/null; then
                     unset REDISCLI_AUTH
                     export REDIS_PRIMARY_ADDR
+                    entrypoint_log "$ME: Connected to primary node!"
                     break
                 fi
 
@@ -101,6 +106,7 @@ function run_redis() {
                         unset REDISCLI_AUTH
                         export REDIS_PRIMARY_ADDR
                         export REDIS_CONF_REPLICAOF="replicaof ${REDIS_PRIMARY_ADDR} ${REDIS_PRIMARY_PORT}"
+                        entrypoint_log "$ME: Connected to primary node!"
                         break
                     fi
 
