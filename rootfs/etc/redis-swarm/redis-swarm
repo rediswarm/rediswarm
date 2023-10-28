@@ -20,8 +20,9 @@ function wait_for_sentinel() {
 }
 
 function run_sentinel() {
-    # Randomize sentinel startup
-    sleep $((RANDOM % RANDOM_SEED))
+    _tmp_lock=$((RANDOM % RANDOM_SEED))
+    entrypoint_log "$ME: Sentinel startup lock for ${_tmp_lock} seconds..."
+    sleep ${_tmp_lock}
 
     local template_file="/etc/redis/templates/sentinel.conf.template"
     local config_file="${REDIS_CONFIG_PATH}/sentinel.conf"
