@@ -96,7 +96,7 @@ function run_redis() {
                 while true; do
                     entrypoint_log "$ME: Trying to contact with primary node..."
                     export REDISCLI_AUTH=${REDISWARM_SECRET}
-                    entrypoint_log "$ME: Authenticating with primary node... REDISCLI_AUTH=${REDISCLI_AUTH}"
+                    entrypoint_log "$ME: Authenticating with primary node..."
                     if redis-cli -h ${REDIS_PRIMARY_ADDR} -p ${REDIS_PRIMARY_PORT} INFO 2>&1 /dev/null; then
                         unset REDISCLI_AUTH
                         export REDIS_PRIMARY_ADDR
