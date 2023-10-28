@@ -1,8 +1,14 @@
+source "/.rediswarm-lib"
+
+# The following variables will be defined by file_env
+# REDISWARM_SECRET
+# REDISWARM_SECRET_FILE
+file_env 'REDISWARM_SECRET'
+
 export REDISWARM_MODE=${REDISWARM_MODE:-redis} # or sentinel
 export REDISWARM_SLOT=${REDISWARM_SLOT:-1}
 export REDISWARM_SLOT_RETRY=${REDISWARM_SLOT_RETRY:-10}
 export REDISWARM_SLOT_TIMEOUT=${REDISWARM_SLOT_TIMEOUT:-30}
-export REDISWARM_SECRET=${REDISWARM_SECRET:-redis-swarm}
 
 export REDIS_CONFIG_PATH=${REDIS_CONFIG_PATH:-/etc/redis/config}
 
