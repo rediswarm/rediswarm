@@ -1,13 +1,18 @@
 target "docker-metadata-action" {}
 
-target "default" {
+target "base" {
     inherits = ["docker-metadata-action"]
     context = "."
     dockerfile = "Dockerfile"
 }
 
+target "default" {
+    inherits = ["docker-metadata-action", "base"]
+    platforms = ["linux/amd64", "linux/arm64"]
+}
+
 target "dev" {
-    inherits = ["default"]
+    inherits = ["base"]
     tags = ["rediswarm/rediswarm:dev"]
     args = {
         S6_VERBOSITY = 2
