@@ -822,8 +822,8 @@ replica-priority 100
 # There is no need to use both the options if you need to override just
 # the port or the IP address.
 #
-replica-announce-ip ${REDIS_HOSTNAME_PREFIX}${REDISWARM_SLOT}
-# replica-announce-port 1234
+# replica-announce-ip ${REDIS_HOSTNAME_PREFIX}${REDISWARM_SLOT}
+# replica-announce-port ${REDIS_PRIMARY_PORT}
 
 ############################### KEYS TRACKING #################################
 
