@@ -48,7 +48,7 @@ function run_sentinel() {
     else
         # If the config file already, the Sentinel already been bootstraped
         if [[ -f "$config_file" ]]; then
-            entrypoint_log "$ME: An existing Sentinel config found. Auto-configure [DISABLED]!]"
+            entrypoint_log "$ME: An existing Sentinel config found. Auto-configure [DISABLED]!"
         else
             export REDIS_PRIMARY_ADDR="${REDIS_HOSTNAME_PREFIX}1"
             entrypoint_log "$ME: No existing Sentinel node found, starting a new instance!"
