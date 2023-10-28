@@ -5,7 +5,7 @@ source "/.rediswarm"
 
 ME=$(basename "$0")
 SCRIPT_DIR=$(dirname "$0")
-MAXWAIT=30
+RANDOM_SEED=60
 
 function entrypoint_log() {
     if [ -z "${REDIS_QUIET_LOGS:-}" ]; then
@@ -21,7 +21,7 @@ function wait_for_sentinel() {
 
 function run_sentinel() {
     # Randomize sentinel startup
-    sleep $((RANDOM % MAXWAIT))
+    sleep $((RANDOM % RANDOM_SEED))
 
     local template_file="/etc/redis/templates/sentinel.conf.template"
     local config_file="${REDIS_CONFIG_PATH}/sentinel.conf"
