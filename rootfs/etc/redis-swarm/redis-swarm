@@ -54,6 +54,8 @@ function run_sentinel() {
         fi
     fi
 
+    entrypoint_log "$ME: Identified primary node: \"${REDIS_PRIMARY_ADDR}\""
+
     # Generate sentinel.conf
     # If the config file already, the Sentinel already been bootstraped
     if [[ ! -f "$config_file" ]]; then
@@ -106,6 +108,8 @@ function run_redis() {
             fi
         fi
     fi
+
+    entrypoint_log "$ME: Identified primary node: \"${REDIS_PRIMARY_ADDR}\""
 
     # Generate redis.conf
     local defined_envs
