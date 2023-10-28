@@ -33,7 +33,7 @@ function run_sentinel() {
 
                 # Trying to make contact with primary node
                 if redis-cli -h ${REDIS_PRIMARY_ADDR} INFO 2>&1 /dev/null; then
-                    break
+                    return
                 fi
             fi
 
@@ -79,14 +79,14 @@ function run_redis() {
                 export REDIS_PRIMARY_ADDR
                 export REDIS_CONF_REPLICAOF=""
                 entrypoint_log "$ME: Sentinel set me \"${REDIS_PRIMARY_ADDR}\" as the primary node!"
-                break
+                return
             fi
 
             # Trying to make contact with primary node
             if redis-cli -h ${REDIS_PRIMARY_ADDR} INFO 2>&1 /dev/null; then
                 export REDIS_PRIMARY_ADDR
                 export REDIS_CONF_REPLICAOF="replicaof ${REDIS_PRIMARY_ADDR} ${REDIS_PRIMARY_PORT}"
-                break
+                return
             fi
 
             entrypoint_log "$ME: Connecting to primary failed.  Waiting..."
