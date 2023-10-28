@@ -29,6 +29,8 @@ function run_sentinel() {
         _tmp_master=$(redis-cli -h ${REDIS_SENTINEL_ADDR} -p ${REDIS_SENTINEL_PORT} --csv SENTINEL get-master-addr-by-name mymaster | tr ',' ' ' | cut -d' ' -f1)
         if [[ -n ${_tmp_master} ]]; then
             REDIS_PRIMARY_ADDR="${_tmp_master//\"}"
+
+            entrypoint_log "$ME: Identified primary node: \"${REDIS_PRIMARY_ADDR}\""
             
             while true; do
                 entrypoint_log "$ME: Trying to contact to primary node..."
@@ -54,8 +56,6 @@ function run_sentinel() {
         fi
     fi
 
-    entrypoint_log "$ME: Identified primary node: \"${REDIS_PRIMARY_ADDR}\""
-
     # Generate sentinel.conf
     # If the config file already, the Sentinel already been bootstraped
     if [[ ! -f "$config_file" ]]; then
@@ -80,6 +80,8 @@ function run_redis() {
         _tmp_master=$(redis-cli -h ${REDIS_SENTINEL_ADDR} -p ${REDIS_SENTINEL_PORT} --csv SENTINEL get-master-addr-by-name mymaster | tr ',' ' ' | cut -d' ' -f1)
         if [[ -n ${_tmp_master} ]]; then
             REDIS_PRIMARY_ADDR="${_tmp_master//\"}"
+
+            entrypoint_log "$ME: Identified primary node: \"${REDIS_PRIMARY_ADDR}\""
 
             # Check if we are the primary node
             if [[ "$(hostname)" == "${REDIS_PRIMARY_ADDR}" ]]; then
@@ -108,8 +110,6 @@ function run_redis() {
             fi
         fi
     fi
-
-    entrypoint_log "$ME: Identified primary node: \"${REDIS_PRIMARY_ADDR}\""
 
     # Generate redis.conf
     local defined_envs
