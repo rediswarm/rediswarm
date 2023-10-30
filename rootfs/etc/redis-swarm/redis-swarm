@@ -16,7 +16,13 @@ function entrypoint_log() {
 function wait_for_sentinel() {
     local _timeout=${1:-15}
     entrypoint_log "$ME: Attempting to contact existing Sentinel: "
-    wait-for-it -t ${_timeout} -h ${REDIS_SENTINEL_ADDR} -p ${REDIS_SENTINEL_PORT}
+    if wait-for-it -t ${_timeout} -h ${REDIS_SENTINEL_ADDR} -p ${REDIS_SENTINEL_PORT}; then
+        entrypoint_log "$ME: Sentinel is available!"
+        return 0
+    else
+        entrypoint_log "$ME: No Sentinel found!"
+        return 1
+    fi
 }
 
 function run_sentinel() {
