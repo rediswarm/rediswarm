@@ -26,12 +26,12 @@ function run_sentinel() {
     local config_file="${REDIS_CONFIG_PATH}/sentinel.conf"
     local filter=""
 
+    entrypoint_log "$ME: Sentinel startup lock for ${_tmp_lock} seconds..."
+    sleep ${_tmp_lock}
+
     # Attempt to connect to existing Sentinel
     # If we can't connect, we are the first node
     if wait_for_sentinel; then
-        entrypoint_log "$ME: Sentinel startup lock for ${_tmp_lock} seconds..."
-        sleep ${_tmp_lock}
-
         # If we can connect, we are not the first
         # node, so we need to wait for the available sentinel to response
         while true; do
