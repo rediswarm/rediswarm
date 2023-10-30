@@ -5,7 +5,7 @@ source "/.rediswarm"
 
 ME=$(basename "$0")
 SCRIPT_DIR=$(dirname "$0")
-RANDOM_SEED=30
+RANDOM_SEED=60
 
 function entrypoint_log() {
     if [ -z "${REDIS_QUIET_LOGS:-}" ]; then
