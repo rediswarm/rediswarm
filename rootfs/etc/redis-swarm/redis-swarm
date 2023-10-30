@@ -20,7 +20,7 @@ function wait_for_sentinel() {
         entrypoint_log "$ME: Sentinel is available!"
         return 0
     else
-        entrypoint_log "$ME: No Sentinel found!"
+        entrypoint_log "$ME: No existing Sentinel node found!"
         return 1
     fi
 }
@@ -79,7 +79,7 @@ function run_sentinel() {
             # We are the first running instance and config file does not exist
             # Set the "${REDIS_HOSTNAME_PREFIX}1" as primary node
             export REDIS_PRIMARY_ADDR="${REDIS_HOSTNAME_PREFIX}1"
-            entrypoint_log "$ME: No existing Sentinel node found, starting a new instance!"
+            entrypoint_log "$ME: Bootstrapping Sentinel!"
             entrypoint_log "$ME: Auto-configuring \"${REDIS_PRIMARY_ADDR}\" as primary node!"
         fi
     fi
