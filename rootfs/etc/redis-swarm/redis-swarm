@@ -5,7 +5,7 @@ source "/.rediswarm"
 
 ME=$(basename "$0")
 SCRIPT_DIR=$(dirname "$0")
-RANDOM_SEED=60
+RANDOM_SEED=30
 
 function entrypoint_log() {
     if [ -z "${REDIS_QUIET_LOGS:-}" ]; then
@@ -32,6 +32,8 @@ function run_sentinel() {
     # Attempt to connect to existing Sentinel
     # If we can't connect, we are the first node
     if wait_for_sentinel; then
+        sleep ${_tmp_lock}
+
         # If we can connect, we are not the first
         # node, so we need to wait for the available sentinel to response
         while true; do
