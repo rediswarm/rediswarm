@@ -20,13 +20,14 @@ function wait_for_sentinel() {
 }
 
 function run_sentinel() {
-    _tmp_lock=$((RANDOM % RANDOM_SEED))
-    entrypoint_log "$ME: Sentinel startup lock for ${_tmp_lock} seconds..."
-    sleep ${_tmp_lock}
-
+    local _tmp_lock=$((RANDOM % RANDOM_SEED))
+    local _sentry_generate_conf=true
     local template_file="/etc/redis/templates/sentinel.conf.template"
     local config_file="${REDIS_CONFIG_PATH}/sentinel.conf"
     local filter=""
+
+    entrypoint_log "$ME: Sentinel startup lock for ${_tmp_lock} seconds..."
+    sleep ${_tmp_lock}
 
     # Attempt to connect to existing Sentinel
     # If we can't connect, we are the first node
@@ -60,10 +61,15 @@ function run_sentinel() {
             sleep 5
         done
     else
-        # If the config file already, the Sentinel already been bootstraped
+        # We are the first running instance
+        # Check if config file already exists
         if [[ -f "$config_file" ]]; then
+            # We are the first running instance and config file already exists
+            _sentry_generate_conf=false
             entrypoint_log "$ME: An existing Sentinel config found. Auto-configure [DISABLED]!"
         else
+            # We are the first running instance and config file does not exist
+            # Set the "${REDIS_HOSTNAME_PREFIX}1" as primary node
             export REDIS_PRIMARY_ADDR="${REDIS_HOSTNAME_PREFIX}1"
             entrypoint_log "$ME: No existing Sentinel node found, starting a new instance!"
             entrypoint_log "$ME: Auto-configuring \"${REDIS_PRIMARY_ADDR}\" as primary node!"
@@ -71,8 +77,7 @@ function run_sentinel() {
     fi
 
     # Generate sentinel.conf
-    # If the config file already, the Sentinel already been bootstraped
-    if [[ ! -f "$config_file" ]]; then
+    if [[ "${_sentry_generate_conf}" == true ]]; then
         local defined_envs
         defined_envs=$(printf '${%s} ' $(awk "END { for (name in ENVIRON) { print ( name ~ /${filter}/ ) ? name : \"\" } }" < /dev/null ))
 
